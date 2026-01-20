@@ -119,11 +119,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>TR Namechecker</h1>
+        <h1>TR Namechecker - Dungeons</h1>
         <p class="subtitle">Similarity Calculator</p>
 
         <div class="input-section">
-            <label for="inputString">Enter name to compare</label>
+            <label for="inputString">Enter string to compare</label>
             <input 
                 type="text" 
                 id="inputString" 
@@ -143,23 +143,26 @@
         // Maximum distance to show in results (only show strings closer than this)
         const MAX_DISTANCE = 6;
         
-        // Predefined list of strings to compare against
-        const PREDEFINED_STRINGS = [
-            'hello world',
-            'goodbye world',
-            'hello there',
-            'testing',
-            'javascript',
-            'python',
-            'programming',
-            'algorithm',
-            'levenshtein',
-            'similarity',
-            'distance',
-            'calculate',
-            'compare',
-            'analysis'
-        ];
+        // Will be populated from names.txt
+        let PREDEFINED_STRINGS = [];
+
+        // Load strings from names.txt
+        async function loadNames() {
+            try {
+                const response = await fetch('names.txt');
+                const text = await response.text();
+                PREDEFINED_STRINGS = text.split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line.length > 0);
+                console.log(`Loaded ${PREDEFINED_STRINGS.length} strings from names.txt`);
+            } catch (error) {
+                console.error('Error loading names.txt:', error);
+                alert('Error loading names.txt. Make sure the file exists in the same directory.');
+            }
+        }
+
+        // Load names on page load
+        loadNames();
 
         // Calculate Levenshtein distance
         function levenshteinDistance(str1, str2) {
@@ -190,6 +193,13 @@
             const maxLen = Math.max(str1.length, str2.length);
             if (maxLen === 0) return 100;
             return Math.round((1 - distance / maxLen) * 100);
+        }
+
+        // Escape HTML to prevent breaking with quotes/apostrophes
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // Update results
@@ -233,7 +243,7 @@
             // Generate HTML
             resultsDiv.innerHTML = filteredResults.map(result => `
                 <div class="result-card">
-                    <div class="result-text">${result.text}</div>
+                    <div class="result-text">${escapeHtml(result.text)}</div>
                     <div class="result-stats">
                         <div>
                             <div class="stat-label">Distance</div>
